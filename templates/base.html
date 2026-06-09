@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}ChemTech Calculator Toolbox{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+
+  <!-- Navigatiebalk -->
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a class="nav-brand" href="{{ url_for('home') }}">⚗️ ChemTech Toolbox</a>
+      <div class="nav-links">
+        {% if session.username %}
+          <span class="nav-user">👤 {{ session.username }}</span>
+          <a href="{{ url_for('history') }}">Geschiedenis</a>
+          <a href="{{ url_for('logout') }}">Uitloggen</a>
+        {% else %}
+          <a href="{{ url_for('login') }}">Inloggen</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <!-- Flashes -->
+  <div class="flash-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="flash flash-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+  </div>
+
+  <!-- Hoofdcontent -->
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>ChemTech Calculator Toolbox &copy; 2024 — Gemaakt voor studenten Chemische Technologie</p>
+  </footer>
+
+</body>
+</html>

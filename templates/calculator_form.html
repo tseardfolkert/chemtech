@@ -1,0 +1,398 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} — ChemTech Calculator Toolbox{% endblock %}
+
+{% block content %}
+<div class="calc-page">
+
+  <!-- Terugknop -->
+  <a class="back-link" href="{{ url_for('home') }}">← Terug naar overzicht</a>
+
+  <h2>{{ title }}</h2>
+
+  <!-- Foutmelding -->
+  {% if error %}
+    <div class="alert alert-danger">
+      <strong>Fout:</strong> {{ error }}
+    </div>
+  {% endif %}
+
+  <!-- ================================================================
+       FORMULIEREN — één per calculator
+       ================================================================ -->
+
+  {# -------- Warmtewisselaar -------- #}
+  {% if calculator == "heat_exchanger" %}
+  <form method="POST" class="calc-form">
+    <div class="field">
+      <label>Procesnaam</label>
+      <input type="text" name="process_name" placeholder="Bijv. Stoomgenerator" />
+    </div>
+    <div class="field">
+      <label>Medium</label>
+      <input type="text" name="medium" placeholder="Bijv. water, stoom, olie" />
+    </div>
+    <div class="field">
+      <label>Massastroom (kg/h)</label>
+      <input type="number" step="any" name="mass_flow" required placeholder="Bijv. 500" />
+    </div>
+    <div class="field">
+      <label>Soortelijke warmte Cp (kJ/kg·K)</label>
+      <input type="number" step="any" name="cp" required placeholder="Water = 4.18" />
+    </div>
+    <div class="field">
+      <label>Begintemperatuur (°C)</label>
+      <input type="number" step="any" name="t_in" required placeholder="Bijv. 20" />
+    </div>
+    <div class="field">
+      <label>Eindtemperatuur (°C)</label>
+      <input type="number" step="any" name="t_out" required placeholder="Bijv. 80" />
+    </div>
+    <div class="field">
+      <label>Bedrijfsuren per dag (h)</label>
+      <input type="number" step="any" name="hours" required placeholder="Bijv. 8" />
+    </div>
+    <div class="field">
+      <label>Energieprijs (€/kWh)</label>
+      <input type="number" step="any" name="price" required placeholder="Bijv. 0.25" />
+    </div>
+    <button type="submit" class="btn btn-primary">Bereken</button>
+  </form>
+
+  {% if result %}
+  <div class="result-block">
+    <h3>Resultaten</h3>
+    {% if result.process_name %}<p><strong>Proces:</strong> {{ result.process_name }} ({{ result.medium }})</p>{% endif %}
+    <table class="result-table">
+      <tr><td>Temperatuurverschil ΔT</td><td><strong>{{ result.delta_t }} °C</strong></td></tr>
+      <tr><td>Vermogen</td><td><strong>{{ result.power_kw }} kW</strong></td></tr>
+      <tr><td>Energieverbruik per dag</td><td><strong>{{ result.energy_per_day }} kWh/dag</strong></td></tr>
+      <tr><td>Kosten per dag</td><td><strong>€ {{ result.cost_per_day }}</strong></td></tr>
+    </table>
+    <div class="formula-box">
+      <strong>Formule:</strong> Q = m · Cp · ΔT<br />
+      <em>Waarbij Q het vermogen is (kW), m de massastroom (kg/s), Cp de soortelijke warmte (kJ/kg·K) en ΔT het temperatuurverschil (K).</em>
+    </div>
+  </div>
+  {% endif %}
+
+  {# -------- Reactor keuzehulp -------- #}
+  {% elif calculator == "reactor" %}
+  <form method="POST" class="calc-form">
+    <div class="field">
+      <label>Procesnaam</label>
+      <input type="text" name="process_name" placeholder="Bijv. Verestering" />
+    </div>
+    <div class="field">
+      <label>Type proces</label>
+      <select name="batch_or_continuous">
+        <option value="batch">Batch</option>
+        <option value="continu">Continu</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Gewenste productie</label>
+      <select name="production_level">
+        <option value="laag">Laag</option>
+        <option value="middel">Middel</option>
+        <option value="hoog">Hoog</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Menging nodig?</label>
+      <select name="mixing_needed">
+        <option value="nee">Nee</option>
+        <option value="ja">Ja</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Gewenste conversie</label>
+      <select name="conversion_level">
+        <option value="laag">Laag</option>
+        <option value="middel">Middel</option>
+        <option value="hoog">Hoog</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Reactorvolume (L)</label>
+      <input type="number" step="any" name="volume" required placeholder="Bijv. 100" />
+    </div>
+    <div class="field">
+      <label>Debiet (L/h)</label>
+      <input type="number" step="any" name="flow_rate" required placeholder="Bijv. 20" />
+    </div>
+    <button type="submit" class="btn btn-primary">Geef advies</button>
+  </form>
+
+  {% if result %}
+  <div class="result-block">
+    <h3>Advies</h3>
+    <p class="reactor-type">{{ result.reactor_type }}</p>
+    <p>{{ result.explanation }}</p>
+    <table class="result-table">
+      <tr><td>Verblijftijd τ</td><td><strong>{{ result.residence_time }} h</strong></td></tr>
+    </table>
+  </div>
+  {% endif %}
+
+  {# -------- Massabalans -------- #}
+  {% elif calculator == "mass_balance" %}
+  <form method="POST" class="calc-form">
+    <div class="field">
+      <label>Massa in (kg of andere eenheid)</label>
+      <input type="number" step="any" name="mass_in" required placeholder="Bijv. 1000" />
+    </div>
+    <div class="field">
+      <label>Massa uit (zelfde eenheid)</label>
+      <input type="number" step="any" name="mass_out" required placeholder="Bijv. 985" />
+    </div>
+    <button type="submit" class="btn btn-primary">Bereken</button>
+  </form>
+
+  {% if result %}
+  <div class="result-block">
+    <h3>Resultaten</h3>
+    <table class="result-table">
+      <tr><td>Massa in</td><td>{{ result.mass_in }}</td></tr>
+      <tr><td>Massa uit</td><td>{{ result.mass_out }}</td></tr>
+      <tr><td>Verschil</td><td><strong>{{ result.difference }}</strong></td></tr>
+      <tr><td>Procentueel verschil</td><td><strong>{{ result.pct_difference }} %</strong></td></tr>
+      <tr>
+        <td>Balans</td>
+        <td>
+          {% if result.balanced %}
+            <span class="badge badge-success">✔ Balans klopt (&lt; 0,1 %)</span>
+          {% else %}
+            <span class="badge badge-warning">⚠ Balans klopt niet</span>
+          {% endif %}
+        </td>
+      </tr>
+    </table>
+  </div>
+  {% endif %}
+
+  {# -------- Rendement -------- #}
+  {% elif calculator == "yield_calc" %}
+  <form method="POST" class="calc-form">
+    <div class="field">
+      <label>Theoretische opbrengst</label>
+      <input type="number" step="any" name="theoretical" required placeholder="Bijv. 500" />
+    </div>
+    <div class="field">
+      <label>Werkelijke opbrengst</label>
+      <input type="number" step="any" name="actual" required placeholder="Bijv. 430" />
+    </div>
+    <button type="submit" class="btn btn-primary">Bereken</button>
+  </form>
+
+  {% if result %}
+  <div class="result-block">
+    <h3>Resultaten</h3>
+    <table class="result-table">
+      <tr><td>Theoretische opbrengst</td><td>{{ result.theoretical }}</td></tr>
+      <tr><td>Werkelijke opbrengst</td><td>{{ result.actual }}</td></tr>
+      <tr><td>Rendement</td><td><strong>{{ result.yield_pct }} %</strong></td></tr>
+    </table>
+    <div class="formula-box">
+      <strong>Formule:</strong> Rendement (%) = (werkelijk / theoretisch) × 100
+    </div>
+  </div>
+  {% endif %}
+
+  {# -------- Conversie -------- #}
+  {% elif calculator == "conversion" %}
+  <form method="POST" class="calc-form">
+    <div class="field">
+      <label>Beginhoeveelheid reactant</label>
+      <input type="number" step="any" name="initial" required placeholder="Bijv. 2.0" />
+    </div>
+    <div class="field">
+      <label>Eindhoeveelheid reactant</label>
+      <input type="number" step="any" name="final" required placeholder="Bijv. 0.4" />
+    </div>
+    <button type="submit" class="btn btn-primary">Bereken</button>
+  </form>
+
+  {% if result %}
+  <div class="result-block">
+    <h3>Resultaten</h3>
+    <table class="result-table">
+      <tr><td>Omgezette hoeveelheid</td><td><strong>{{ result.converted }}</strong></td></tr>
+      <tr><td>Conversie</td><td><strong>{{ result.conversion_pct }} %</strong></td></tr>
+    </table>
+    <div class="formula-box">
+      <strong>Formule:</strong> X (%) = (begin − eind) / begin × 100
+    </div>
+  </div>
+  {% endif %}
+
+  {# -------- Verblijftijd -------- #}
+  {% elif calculator == "residence_time" %}
+  <form method="POST" class="calc-form">
+    <div class="field">
+      <label>Reactorvolume (L)</label>
+      <input type="number" step="any" name="volume" required placeholder="Bijv. 200" />
+    </div>
+    <div class="field">
+      <label>Debiet (L/h)</label>
+      <input type="number" step="any" name="flow_rate" required placeholder="Bijv. 50" />
+    </div>
+    <button type="submit" class="btn btn-primary">Bereken</button>
+  </form>
+
+  {% if result %}
+  <div class="result-block">
+    <h3>Resultaten</h3>
+    <table class="result-table">
+      <tr><td>Verblijftijd τ</td><td><strong>{{ result.residence_time }} h</strong></td></tr>
+    </table>
+    <div class="formula-box">
+      <strong>Formule:</strong> τ = V / Q
+    </div>
+  </div>
+  {% endif %}
+
+  {# -------- Verdunning -------- #}
+  {% elif calculator == "dilution" %}
+  <form method="POST" class="calc-form">
+    <div class="field">
+      <label>Beginconcentratie C₁ (mol/L of andere eenheid)</label>
+      <input type="number" step="any" name="c1" required placeholder="Bijv. 5.0" />
+    </div>
+    <div class="field">
+      <label>Beginvolume V₁ (L)</label>
+      <input type="number" step="any" name="v1" required placeholder="Bijv. 0.1" />
+    </div>
+    <div class="field">
+      <label>Gewenste eindconcentratie C₂</label>
+      <input type="number" step="any" name="c2" required placeholder="Bijv. 0.5" />
+    </div>
+    <button type="submit" class="btn btn-primary">Bereken</button>
+  </form>
+
+  {% if result %}
+  <div class="result-block">
+    <h3>Resultaten</h3>
+    <table class="result-table">
+      <tr><td>Eindvolume V₂</td><td><strong>{{ result.v2 }} L</strong></td></tr>
+      <tr><td>Toe te voegen oplosmiddel</td><td><strong>{{ result.solvent_to_add }} L</strong></td></tr>
+    </table>
+    <div class="formula-box">
+      <strong>Formule:</strong> C₁ · V₁ = C₂ · V₂
+    </div>
+  </div>
+  {% endif %}
+
+  {# -------- Neutralisatie -------- #}
+  {% elif calculator == "neutralization" %}
+  <form method="POST" class="calc-form">
+    <div class="field">
+      <label>Volume zuur (L)</label>
+      <input type="number" step="any" name="v_acid" required placeholder="Bijv. 0.5" />
+    </div>
+    <div class="field">
+      <label>Concentratie zuur (mol/L)</label>
+      <input type="number" step="any" name="c_acid" required placeholder="Bijv. 0.1" />
+    </div>
+    <div class="field">
+      <label>Zuur-factor (aantal H⁺ per molecule)</label>
+      <select name="n_acid">
+        <option value="1">1 — bijv. HCl, HNO₃</option>
+        <option value="2">2 — bijv. H₂SO₄</option>
+        <option value="3">3 — bijv. H₃PO₄</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Concentratie base (mol/L)</label>
+      <input type="number" step="any" name="c_base" required placeholder="Bijv. 0.1" />
+    </div>
+    <div class="field">
+      <label>Base-factor (aantal OH⁻ per molecule)</label>
+      <select name="n_base">
+        <option value="1">1 — bijv. NaOH, KOH</option>
+        <option value="2">2 — bijv. Ca(OH)₂</option>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Bereken</button>
+  </form>
+
+  {% if result %}
+  <div class="result-block">
+    <h3>Resultaten</h3>
+    <table class="result-table">
+      <tr><td>Mol zuur</td><td><strong>{{ result.mol_acid }} mol</strong></td></tr>
+      <tr><td>Mol H⁺</td><td><strong>{{ result.mol_h_plus }} mol</strong></td></tr>
+      <tr><td>Benodigd volume base</td><td><strong>{{ result.v_base }} L</strong></td></tr>
+    </table>
+    <div class="formula-box">
+      <strong>Let op:</strong> Dit is een vereenvoudigde berekening die geldt voor <em>sterke</em> zuren
+      en <em>sterke</em> basen die volledig dissociëren. Voor zwakke zuren of basen moet je ook
+      de zuur/base-constante (Ka / Kb) meenemen.
+    </div>
+  </div>
+  {% endif %}
+
+  {# -------- Molmassa / mol -------- #}
+  {% elif calculator == "moles" %}
+  <form method="POST" class="calc-form">
+    <div class="field">
+      <label>Richting</label>
+      <select name="direction">
+        <option value="mass_to_mol">Massa → mol (n = m / M)</option>
+        <option value="mol_to_mass">Mol → massa (m = n · M)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Invoerwaarde (massa in g of mol)</label>
+      <input type="number" step="any" name="value" required placeholder="Bijv. 36" />
+    </div>
+    <div class="field">
+      <label>Molmassa (g/mol)</label>
+      <input type="number" step="any" name="molar_mass" required placeholder="Bijv. 18 voor water" />
+    </div>
+    <button type="submit" class="btn btn-primary">Bereken</button>
+  </form>
+
+  {% if result %}
+  <div class="result-block">
+    <h3>Resultaten</h3>
+    <table class="result-table">
+      <tr><td>{{ result.result_label }}</td><td><strong>{{ result.result }}</strong></td></tr>
+    </table>
+    <div class="formula-box">
+      <strong>Formules:</strong> n = m / M &nbsp;|&nbsp; m = n · M<br />
+      <em>Waarbij n = aantal mol, m = massa (g) en M = molmassa (g/mol).</em>
+    </div>
+  </div>
+  {% endif %}
+
+  {# -------- Dichtheid -------- #}
+  {% elif calculator == "density" %}
+  <form method="POST" class="calc-form">
+    <div class="field">
+      <label>Massa (kg of g)</label>
+      <input type="number" step="any" name="mass" required placeholder="Bijv. 800" />
+    </div>
+    <div class="field">
+      <label>Volume (L of m³ — zelfde eenhedenstelsel)</label>
+      <input type="number" step="any" name="volume" required placeholder="Bijv. 1.0" />
+    </div>
+    <button type="submit" class="btn btn-primary">Bereken</button>
+  </form>
+
+  {% if result %}
+  <div class="result-block">
+    <h3>Resultaten</h3>
+    <table class="result-table">
+      <tr><td>Dichtheid ρ</td><td><strong>{{ result.density }}</strong></td></tr>
+    </table>
+    <div class="formula-box">
+      <strong>Formule:</strong> ρ = m / V
+    </div>
+  </div>
+  {% endif %}
+
+  {% endif %}
+  {# Einde calculator-blokken #}
+
+</div>
+{% endblock %}

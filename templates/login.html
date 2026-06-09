@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Inloggen — ChemTech Calculator Toolbox{% endblock %}
+
+{% block content %}
+<div class="form-page">
+  <div class="form-card">
+    <h2>⚗️ Inloggen</h2>
+    <p class="form-intro">Vul je naam in om te beginnen. Je hoeft geen wachtwoord in te stellen.</p>
+
+    <form method="POST" action="{{ url_for('login') }}">
+      <div class="field">
+        <label for="username">Jouw naam</label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          placeholder="Bijv. Jan de Vries"
+          maxlength="50"
+          required
+          autofocus
+        />
+      </div>
+      <button type="submit" class="btn btn-primary btn-full">Inloggen →</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Home — ChemTech Calculator Toolbox{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <h1>ChemTech Calculator Toolbox</h1>
+  <p class="hero-sub">Eenvoudige en betrouwbare berekeningen voor Chemische Technologie.</p>
+  {% if not session.username %}
+    <a class="btn btn-primary" href="{{ url_for('login') }}">Log in om te beginnen →</a>
+  {% else %}
+    <p class="hero-welcome">Welkom terug, <strong>{{ session.username }}</strong>! Kies een calculator hieronder.</p>
+  {% endif %}
+</section>
+
+<section class="cards-grid">
+
+  <a class="card" href="{{ url_for('calc_heat_exchanger_view') }}">
+    <div class="card-icon">🌡️</div>
+    <h3>Warmtewisselaar</h3>
+    <p>Bereken vermogen, energieverbruik en kosten via Q = m · Cp · ΔT.</p>
+  </a>
+
+  <a class="card" href="{{ url_for('calc_reactor_view') }}">
+    <div class="card-icon">⚙️</div>
+    <h3>Reactor keuzehulp</h3>
+    <p>Ontvang een aanbeveling: Batchreactor, CSTR of PFR — inclusief verblijftijd.</p>
+  </a>
+
+  <a class="card" href="{{ url_for('calc_mass_balance_view') }}">
+    <div class="card-icon">⚖️</div>
+    <h3>Massabalans</h3>
+    <p>Controleer of de massabalans van je proces klopt.</p>
+  </a>
+
+  <a class="card" href="{{ url_for('calc_yield_view') }}">
+    <div class="card-icon">📈</div>
+    <h3>Rendement</h3>
+    <p>Bereken het procentuele rendement van een reactie of proces.</p>
+  </a>
+
+  <a class="card" href="{{ url_for('calc_conversion_view') }}">
+    <div class="card-icon">🔄</div>
+    <h3>Conversie</h3>
+    <p>Bepaal hoeveel procent van de reactant is omgezet.</p>
+  </a>
+
+  <a class="card" href="{{ url_for('calc_residence_time_view') }}">
+    <div class="card-icon">⏱️</div>
+    <h3>Verblijftijd</h3>
+    <p>Bereken de verblijftijd τ = V / Q in een reactor.</p>
+  </a>
+
+  <a class="card" href="{{ url_for('calc_dilution_view') }}">
+    <div class="card-icon">💧</div>
+    <h3>Verdunning</h3>
+    <p>Gebruik C₁V₁ = C₂V₂ om eindvolume en toe te voegen oplosmiddel te berekenen.</p>
+  </a>
+
+  <a class="card" href="{{ url_for('calc_neutralization_view') }}">
+    <div class="card-icon">🧪</div>
+    <h3>pH-neutralisatie</h3>
+    <p>Bereken het benodigde volume base voor volledige neutralisatie van een zuur.</p>
+  </a>
+
+  <a class="card" href="{{ url_for('calc_moles_view') }}">
+    <div class="card-icon">🔬</div>
+    <h3>Molmassa / mol</h3>
+    <p>Reken massa om naar mol (n = m/M) of mol naar massa (m = n·M).</p>
+  </a>
+
+  <a class="card" href="{{ url_for('calc_density_view') }}">
+    <div class="card-icon">📦</div>
+    <h3>Dichtheid</h3>
+    <p>Bereken de dichtheid via ρ = m / V.</p>
+  </a>
+
+</section>
+{% endblock %}

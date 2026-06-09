@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Geschiedenis — ChemTech Calculator Toolbox{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>📋 Mijn berekeningen</h2>
+  <p>Overzicht van al jouw opgeslagen berekeningen.</p>
+</div>
+
+{% if calculations %}
+  <div class="table-wrapper">
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Calculator</th>
+          <th>Formule</th>
+          <th>Resultaat</th>
+          <th>Datum &amp; tijd</th>
+          <th>Verwijder</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for calc in calculations %}
+        <tr>
+          <td>{{ calc.id }}</td>
+          <td><strong>{{ calc.calculator_name }}</strong></td>
+          <td><code>{{ calc.formula }}</code></td>
+          <td>
+            {% for key, val in calc.result.items() %}
+              <span class="result-pill">{{ key }}: {{ val }}</span>
+            {% endfor %}
+          </td>
+          <td class="date-cell">{{ calc.created_at }}</td>
+          <td>
+            <form method="POST" action="{{ url_for('delete_calculation', calc_id=calc.id) }}"
+                  onsubmit="return confirm('Weet je zeker dat je deze berekening wilt verwijderen?');">
+              <button type="submit" class="btn btn-danger btn-sm">Verwijder</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="empty-state">
+    <p>Je hebt nog geen berekeningen opgeslagen.</p>
+    <a class="btn btn-primary" href="{{ url_for('home') }}">Ga naar de calculators →</a>
+  </div>
+{% endif %}
+{% endblock %}
